@@ -1,28 +1,18 @@
-import React,{useEffect,useState} from "react";
+import React,{useEffect,useState,useCallback} from "react";
 import axios from 'axios';
 import Navbar from "../components/navbar";
-// @ts-ignore
 import Quagga from "@ericblade/quagga2"
 
 export default function Home(){
     const [isStart,set_isStart]=useState(false);
     const [barcode,set_barcode]=useState('');
 
-    useEffect(()=>{
-        if(isStart){
-            startScanner();
-        }
-        else{
-            stopScanner();
-        }
-    },[isStart,startScanner])
-
     const _onDetected= res =>{
         set_barcode(res.codeResult.code);
         set_isStart(false)
     }
 
-    const startScanner=()=>{
+    const startScanner=useCallback(()=>{
         set_barcode('');
         Quagga.init(
             {
@@ -74,7 +64,7 @@ export default function Home(){
         );
         Quagga.onDetected(_onDetected);
         
-    };
+    },[]);
 
     const stopScanner = ()=>{
         Quagga.offProcessed();
@@ -82,10 +72,17 @@ export default function Home(){
         Quagga.stop();
     }
 
+     useEffect(()=>{
+        if(isStart)  startScanner();
+        else stopScanner();
+    },[isStart,startScanner])
+
     axios.get('http://localhost:3004/Hoy')
          .catch((err)=>{
             console.log(err)
          })
+
+
 
     return (
         <div>
